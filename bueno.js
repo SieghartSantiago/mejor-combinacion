@@ -441,7 +441,7 @@ function ajustarValor(id, factor, soloComponente = false) {
   const span = document.getElementById(id)
   let valor = parseFloat(span.dataset.valor)
   const valorOriginal = valor
-  if (valor < 10e-12 && factor == 0.1) return
+  if (valor < 10e-12 && factor == 0.1) return false
   const esResistencia = span.dataset.esres === 'true'
 
   // Multiplicamos o dividimos
@@ -453,28 +453,40 @@ function ajustarValor(id, factor, soloComponente = false) {
 
     switch (nombreComponente) {
       case 'R1':
-        ajustarValor('R2-valor', factor, true)
+        if (!ajustarValor('R2-valor', factor, true)) return
         break
       case 'R2':
-        ajustarValor('R1-valor', factor, true)
+        if (!ajustarValor('R1-valor', factor, true)) return
         break
       case 'Ri':
-        ajustarValor('Ci-valor', factor == 10 ? 0.1 : 10, true)
+        if (!ajustarValor('Ci-valor', factor == 10 ? 0.1 : 10, true)) return
         break
       case 'Ci':
-        ajustarValor('Ri-valor', factor == 10 ? 0.1 : 10, true)
+        if (!ajustarValor('Ri-valor', factor == 10 ? 0.1 : 10, true)) return
         break
       case 'Rd1':
-        ajustarValor('Rd2-valor', factor, true)
-        ajustarValor('Cd-valor', factor == 10 ? 0.1 : 10, true)
+        if (!ajustarValor('Rd2-valor', factor, true)) return
+
+        if (!ajustarValor('Cd-valor', factor == 10 ? 0.1 : 10, true)) {
+          ajustarValor('Rd2-valor', factor == 10 ? 0.1 : 10, true)
+          return
+        }
         break
       case 'Rd2':
-        ajustarValor('Rd1-valor', factor, true)
-        ajustarValor('Cd-valor', factor == 10 ? 0.1 : 10, true)
+        if (!ajustarValor('Rd1-valor', factor, true)) return
+
+        if (!ajustarValor('Cd-valor', factor == 10 ? 0.1 : 10, true)) {
+          ajustarValor('Rd1-valor', factor == 10 ? 0.1 : 10, true)
+          return
+        }
         break
       case 'Cd':
-        ajustarValor('Rd1-valor', factor == 10 ? 0.1 : 10, true)
-        ajustarValor('Rd2-valor', factor == 10 ? 0.1 : 10, true)
+        if (!ajustarValor('Rd1-valor', factor == 10 ? 0.1 : 10, true)) return
+
+        if (!ajustarValor('Rd2-valor', factor == 10 ? 0.1 : 10, true)) {
+          ajustarValor('Rd1-valor', factor, true)
+          return
+        }
         break
     }
   }
@@ -482,4 +494,5 @@ function ajustarValor(id, factor, soloComponente = false) {
   // Guardamos el nuevo valor y actualizamos el texto
   span.dataset.valor = valor
   span.textContent = generarNombreComponente(valor, esResistencia)
+  return true
 }
