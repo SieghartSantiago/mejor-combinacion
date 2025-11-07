@@ -48,6 +48,8 @@ btnMioHtml.addEventListener('click', (e) => {
 // const Z2 = 40100
 // const P = 64092.85
 
+const componentes = {}
+
 function calcular(Kc, Z1, Z2, P) {
   //! Calculo de A, B, C y D
 
@@ -97,7 +99,6 @@ function calcular(Kc, Z1, Z2, P) {
     1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2,
   ]
 
-  const componentes = {}
   let error = Infinity
 
   valComponentes.forEach((Cd) => {
@@ -206,15 +207,15 @@ function calcular(Kc, Z1, Z2, P) {
   console.log('----------------')
 
   outHtml.innerHTML += `
-  <p class="container-resistencias">
-  <span>R1: ${generarNombreComponente(componentes.R1)}</span>
-  <span>R2: ${generarNombreComponente(componentes.R2)}</span>
-  <span>Ri: ${generarNombreComponente(componentes.Ri)}</span>
-  <span>Ci: ${generarNombreComponente(componentes.Ci, false)}</span>
-  <span>Rd1: ${generarNombreComponente(componentes.Rd1)}</span>
-  <span>Rd2: ${generarNombreComponente(componentes.Rd2)}</span>
-  <span>Cd: ${generarNombreComponente(componentes.Cd, false)}</span>
-  </p>
+  <div class="container-resistencias">
+    ${crearElementoComponente('R1', componentes.R1, true)}
+    ${crearElementoComponente('R2', componentes.R2, true)}
+    ${crearElementoComponente('Ri', componentes.Ri, true)}
+    ${crearElementoComponente('Ci', componentes.Ci, false)}
+    ${crearElementoComponente('Rd1', componentes.Rd1, true)}
+    ${crearElementoComponente('Rd2', componentes.Rd2, true)}
+    ${crearElementoComponente('Cd', componentes.Cd, false)}
+  </div>
   `
 
   const ANuevo =
@@ -271,7 +272,7 @@ function calcular(Kc, Z1, Z2, P) {
   )
 
   outHtml.innerHTML += `
-    <table border="1">
+    <table border="1" class="tabla-valores">
 <thead>
   <tr>
     <th></th>
@@ -407,7 +408,7 @@ function generarNombreComponente(valor, esResistencia = true) {
     { limite: 1e-12, simbolo: 'p' },
   ]
 
-  const unidad = esResistencia ? "Ω" : "F"
+  const unidad = esResistencia ? 'Ω' : 'F'
 
   for (let i = 0; i < prefijos.length; i++) {
     const { limite, simbolo } = prefijos[i]
@@ -418,6 +419,67 @@ function generarNombreComponente(valor, esResistencia = true) {
       return `${num}${simbolo}${unidad}`
     }
   }
+}
 
-  const exponente = Math.floor(Math.log10(Math.abs(valor)))
+function crearElementoComponente(nombre, valor, esResistencia = true) {
+  const id = `${nombre}-valor`
+  const valorFormateado = generarNombreComponente(valor, esResistencia)
+
+  return `
+    <div class="componente">
+      <span>${nombre}: </span>
+      <span class="valor" id="${id}" data-valor="${valor}" data-esres="${esResistencia}">
+        ${valorFormateado}
+      </span>
+      <button class="boton-flecha" onclick="ajustarValor('${id}', 10)">⬆️</button>
+      <button class="boton-flecha" onclick="ajustarValor('${id}', 0.1)">⬇️</button>
+    </div>
+  `
+}
+
+function ajustarValor(id, factor, soloComponente = false) {
+  const span = document.getElementById(id)
+  let valor = parseFloat(span.dataset.valor)
+  const valorOriginal = valor
+  if (valor < 10e-12 && factor == 0.1) return
+  const esResistencia = span.dataset.esres === 'true'
+
+  // Multiplicamos o dividimos
+  if (factor > 1) valor *= factor
+  else valor *= factor
+
+  if (!soloComponente) {
+    const nombreComponente = id.split('-')[0]
+
+    switch (nombreComponente) {
+      case 'R1':
+        ajustarValor('R2-valor', factor, true)
+        break
+      case 'R2':
+        ajustarValor('R1-valor', factor, true)
+        break
+      case 'Ri':
+        ajustarValor('Ci-valor', factor == 10 ? 0.1 : 10, true)
+        break
+      case 'Ci':
+        ajustarValor('Ri-valor', factor == 10 ? 0.1 : 10, true)
+        break
+      case 'Rd1':
+        ajustarValor('Rd2-valor', factor, true)
+        ajustarValor('Cd-valor', factor == 10 ? 0.1 : 10, true)
+        break
+      case 'Rd2':
+        ajustarValor('Rd1-valor', factor, true)
+        ajustarValor('Cd-valor', factor == 10 ? 0.1 : 10, true)
+        break
+      case 'Cd':
+        ajustarValor('Rd1-valor', factor == 10 ? 0.1 : 10, true)
+        ajustarValor('Rd2-valor', factor == 10 ? 0.1 : 10, true)
+        break
+    }
+  }
+
+  // Guardamos el nuevo valor y actualizamos el texto
+  span.dataset.valor = valor
+  span.textContent = generarNombreComponente(valor, esResistencia)
 }

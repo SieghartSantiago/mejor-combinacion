@@ -46,6 +46,10 @@ body {
   align-items: center;
 }
 
+.tabla-valores {
+  margin-top: 25px;
+}
+
 .container-numerador {
   display: flex;
   align-items: center;
@@ -78,4 +82,32 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.container-resistencias {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.componente {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+}
+
+.boton-flecha {
+  background-color: #eee;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  transition: background 0.2s;
+}
+
+.boton-flecha:hover {
+  background-color: #ccc;
 }
