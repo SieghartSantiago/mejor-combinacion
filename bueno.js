@@ -34,22 +34,6 @@ btnMioHtml.addEventListener('click', (e) => {
   btnHtml.click()
 })
 
-const btnAnitaHtml = document.getElementById('btn-calcular-anita')
-
-btnAnitaHtml.addEventListener('click', (e) => {
-  e.preventDefault()
-  inputKcHtml.value = 3.6
-  cambiarTamanioInput(inputKcHtml)
-  inputZ1Html.value = 100396.97
-  cambiarTamanioInput(inputZ1Html)
-  inputZ2Html.value = 150000
-  cambiarTamanioInput(inputZ2Html)
-  inputPHtml.value = 188929.01
-  cambiarTamanioInput(inputPHtml)
-
-  btnHtml.click()
-})
-
 // const Kc = 71.68
 // const Z1 = 102926.92
 // const Z2 = 134981.12
