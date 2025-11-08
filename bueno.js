@@ -8,11 +8,6 @@ const btnHtml = document.getElementById('btn-calcular')
 btnHtml.addEventListener('click', (e) => {
   e.preventDefault()
 
-  console.log(inputKcHtml.value)
-  console.log(inputZ1Html.value)
-  console.log(inputZ2Html.value)
-  console.log(inputPHtml.value)
-
   calcular(
     Number(inputKcHtml.value),
     Number(inputZ1Html.value),
@@ -26,6 +21,7 @@ const outHtml = document.getElementById('out')
 const btnMioHtml = document.getElementById('btn-calcular-mio')
 
 btnMioHtml.addEventListener('click', (e) => {
+  e.preventDefault()
   inputKcHtml.value = 71.68
   cambiarTamanioInput(inputKcHtml)
   inputZ1Html.value = 102926.92
@@ -33,6 +29,22 @@ btnMioHtml.addEventListener('click', (e) => {
   inputZ2Html.value = 134981.12
   cambiarTamanioInput(inputZ2Html)
   inputPHtml.value = 329361.94
+  cambiarTamanioInput(inputPHtml)
+
+  btnHtml.click()
+})
+
+const btnAnitaHtml = document.getElementById('btn-calcular-anita')
+
+btnAnitaHtml.addEventListener('click', (e) => {
+  e.preventDefault()
+  inputKcHtml.value = 3.6
+  cambiarTamanioInput(inputKcHtml)
+  inputZ1Html.value = 100396.97
+  cambiarTamanioInput(inputZ1Html)
+  inputZ2Html.value = 150000
+  cambiarTamanioInput(inputZ2Html)
+  inputPHtml.value = 188929.01
   cambiarTamanioInput(inputPHtml)
 
   btnHtml.click()
@@ -75,23 +87,9 @@ function calcular(Kc, Z1, Z2, P) {
   }">${segundaCondicion}</span></p>
   `
 
-  if (primeraCondicion) {
-    console.log('Primera condicion: ' + primeraCondicion)
-  } else {
-    console.error('Primera condicion: ' + primeraCondicion)
-  }
-
-  if (segundaCondicion) {
-    console.log('Segunda condicion: ' + segundaCondicion)
-  } else {
-    console.error('Segunda condicion: ' + segundaCondicion)
-  }
-
   if (!primeraCondicion || !segundaCondicion) {
     return
   }
-
-  // console.log('----------------')
 
   //! Calculo de Cd y Rd1
 
@@ -103,10 +101,14 @@ function calcular(Kc, Z1, Z2, P) {
 
   valComponentes.forEach((Cd) => {
     const Rd1Real = 1 / (D * Cd)
+    let exponente = Math.floor(Math.log10(Math.abs(Rd1Real)))
 
-    const exponente = Math.floor(Math.log10(Math.abs(Rd1Real)))
+    let Rd1RealNormalizado = Rd1Real * 10 ** (exponente * -1)
 
-    const Rd1RealNormalizado = Rd1Real * 10 ** (exponente * -1)
+    if (Rd1RealNormalizado > 9.1) {
+      Rd1RealNormalizado /= 10
+      exponente++
+    }
 
     const Rd1Comercial = valComponentes.reduce((a, b) =>
       Math.abs(b - Rd1RealNormalizado) < Math.abs(a - Rd1RealNormalizado)
@@ -121,12 +123,6 @@ function calcular(Kc, Z1, Z2, P) {
     }
   })
 
-  // console.log('Cd: ' + componentes.Cd)
-  // console.log('Rd1: ' + componentes.Rd1)
-  // console.log('Error Rd1: ' + error)
-
-  // console.log('----------------')
-
   //! Calculo de Ci y Ri
 
   error = Infinity
@@ -134,9 +130,14 @@ function calcular(Kc, Z1, Z2, P) {
   valComponentes.forEach((Ci) => {
     const RiReal = D / (C * Ci)
 
-    const exponente = Math.floor(Math.log10(Math.abs(RiReal)))
+    let exponente = Math.floor(Math.log10(Math.abs(RiReal)))
 
-    const RiRealNormalizado = RiReal * 10 ** (exponente * -1)
+    let RiRealNormalizado = RiReal * 10 ** (exponente * -1)
+
+    if (RiRealNormalizado > 9.1) {
+      RiRealNormalizado /= 10
+      exponente++
+    }
 
     const RiComercial = valComponentes.reduce((a, b) =>
       Math.abs(b - RiRealNormalizado) < Math.abs(a - RiRealNormalizado) ? b : a
@@ -152,12 +153,6 @@ function calcular(Kc, Z1, Z2, P) {
   componentes.Ci *= 10
   componentes.Ri /= 10
 
-  console.log('Ci: ' + componentes.Ci)
-  console.log('Ri: ' + componentes.Ri)
-  console.log('Error Ri: ' + error)
-
-  console.log('----------------')
-
   //! Calculo de R1 y R2
 
   error = Infinity
@@ -165,9 +160,14 @@ function calcular(Kc, Z1, Z2, P) {
   valComponentes.forEach((R1) => {
     const R2Real = ((B - C / D) * R1) / D
 
-    const exponente = Math.floor(Math.log10(Math.abs(R2Real)))
+    let exponente = Math.floor(Math.log10(Math.abs(R2Real)))
 
-    const R2RealNormalizado = R2Real * 10 ** (exponente * -1)
+    let R2RealNormalizado = R2Real * 10 ** (exponente * -1)
+
+    if (R2RealNormalizado > 9.1) {
+      R2RealNormalizado /= 10
+      exponente++
+    }
 
     const R2Comercial = valComponentes.reduce((a, b) =>
       Math.abs(b - R2RealNormalizado) < Math.abs(a - R2RealNormalizado) ? b : a
@@ -175,22 +175,20 @@ function calcular(Kc, Z1, Z2, P) {
 
     if (Math.abs(R2Comercial - R2RealNormalizado) < error) {
       error = Math.abs(R2Comercial - R2RealNormalizado)
-      componentes.R2 = R2Comercial * 10000
-      componentes.R1 = R1 * 10 ** exponente
+      componentes.R2 = R2Comercial* 10 ** exponente
+      componentes.R1 = R1 
     }
   })
-
-  console.log('R1: ' + componentes.R1)
-  console.log('R2: ' + componentes.R2)
-  console.log('Error R2: ' + error)
-
-  console.log('----------------')
 
   //! Calculo de Rd2
 
   const Rd2Real = ((A + C / D ** 2 - B / D) * 1) / (D * componentes.Cd)
-  const exponente = Math.floor(Math.log10(Math.abs(Rd2Real)))
-  const Rd2RealNormalizado = Rd2Real * 10 ** (exponente * -1)
+  let exponente = Math.floor(Math.log10(Math.abs(Rd2Real)))
+  let Rd2RealNormalizado = Rd2Real * 10 ** (exponente * -1)
+  if (Rd2RealNormalizado > 9.1) {
+    Rd2RealNormalizado /= 10
+    exponente++
+  }
   componentes.Rd2 =
     valComponentes.reduce((a, b) =>
       Math.abs(b - Rd2RealNormalizado) < Math.abs(a - Rd2RealNormalizado)
@@ -200,11 +198,6 @@ function calcular(Kc, Z1, Z2, P) {
     10 ** exponente
 
   error = Math.abs(Rd2RealNormalizado - componentes.Rd2 / 10 ** exponente)
-
-  console.log('Rd2: ' + componentes.Rd2)
-  console.log('Error Rd2: ' + error)
-
-  console.log('----------------')
 
   outHtml.innerHTML += `
   <div class="container-resistencias">
@@ -236,40 +229,6 @@ function calcular(Kc, Z1, Z2, P) {
   const BErrorPor = (Math.abs(BNuevo - B) / Math.abs(B)) * 100
   const CErrorPor = (Math.abs(CNuevo - C) / Math.abs(C)) * 100
   const DErrorPor = (Math.abs(DNuevo - D) / Math.abs(D)) * 100
-
-  console.log('A nuevo: ' + ANuevo)
-  console.log('B nuevo: ' + BNuevo)
-  console.log('C nuevo: ' + CNuevo)
-  console.log('D nuevo: ' + DNuevo)
-
-  console.log(
-    'Error A: ' +
-      Math.abs(A - ANuevo) +
-      ' | ' +
-      (Math.abs(ANuevo - A) / Math.abs(A)) * 100 +
-      '%'
-  )
-  console.log(
-    'Error B: ' +
-      Math.abs(B - BNuevo) +
-      ' | ' +
-      (Math.abs(BNuevo - B) / Math.abs(B)) * 100 +
-      '%'
-  )
-  console.log(
-    'Error C: ' +
-      Math.abs(C - CNuevo) +
-      ' | ' +
-      (Math.abs(CNuevo - C) / Math.abs(C)) * 100 +
-      '%'
-  )
-  console.log(
-    'Error D: ' +
-      Math.abs(D - DNuevo) +
-      ' | ' +
-      (Math.abs(DNuevo - D) / Math.abs(D)) * 100 +
-      '%'
-  )
 
   outHtml.innerHTML += `
     <table border="1" class="tabla-valores">
@@ -339,11 +298,11 @@ function calcular(Kc, Z1, Z2, P) {
     `
   } else {
     if ('x' in resultadoCuadratica) {
-      outHtml.innerText += `
+      outHtml.innerHTML += `
       Unica raiz: ${resultadoCuadratica.x}
       `
     } else {
-      outHtml.innerText += `
+      outHtml.innerHTML += `
       Raices imaginarias: 
       X1: ${resultadoCuadratica.x1Real} ${resultadoCuadratica.x1Imaginario}i
       X2: ${resultadoCuadratica.x2Real} ${resultadoCuadratica.x2Imaginario}i
